@@ -4,6 +4,7 @@ import com.example.mancala.repo.PlayerRepo;
 import com.example.mancala.serviceEndPoints.eception.MancalaException;
 import com.example.mancala.entity.PlayerBoard;
 import com.example.mancala.repo.BoardRepo;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class GameServiceImpl implements GameService {
         return mancalaBoardRepo.getPlayerCount();
     }
 
+    @RateLimiter(name = "mancala")
     @Override
     public void newGame(Integer pitAmount, Integer cellCount) {
         mancalaBoardRepo.createNewMancala(pitAmount, cellCount);
@@ -94,6 +96,7 @@ public class GameServiceImpl implements GameService {
     public Integer getNextPlayer() {
         return mancalaBoardRepo.getPlayerTurnIndex();
     }
+
     @Override
     public Boolean gameIsOver() {
         return mancalaBoardRepo.getMancala().getPlayers().stream().anyMatch(playerBoard -> playerBoardRepo.isNotEmpty(playerBoard));
@@ -115,6 +118,7 @@ public class GameServiceImpl implements GameService {
             throw new MancalaException.CellIsNotValidException(" please choose valid cell between 1 and " + mancalaBoardRepo.getCellCount());
         }
     }
+
     @Override
     public void checkGameValidation() {
         if (mancalaBoardRepo.getMancala() == null) {
@@ -125,7 +129,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public void checkStarterPlayerValidation(Integer playerIndex) {
         if (playerIndex < 1 || playerIndex > mancalaBoardRepo.getPlayerCount()) {
-            throw new MancalaException.PlayerNumberIsNotValidException("please choose a number between 1 and "+mancalaBoardRepo.getPlayerCount());
+            throw new MancalaException.PlayerNumberIsNotValidException("please choose a number between 1 and " + mancalaBoardRepo.getPlayerCount());
         }
     }
 

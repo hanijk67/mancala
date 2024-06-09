@@ -18,13 +18,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 public class GameServiceTest {
 
 
-    @Test
-    public void play() {
-
+    public MancalaBoard initialMancalaBoard() {
         List<Pit> pitsFirst = new ArrayList<>();
         List<Pit> pitssecond = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
@@ -35,12 +32,17 @@ public class GameServiceTest {
         List<PlayerBoard> playerBoardList = new ArrayList<>();
         playerBoardList.add(new PlayerBoard(pitsFirst));
         playerBoardList.add(new PlayerBoard(pitssecond));
-        MancalaBoard mancalaBoard = new MancalaBoard(playerBoardList);
+
+        return new MancalaBoard(playerBoardList);
+    }
+
+    @Test
+    public void play() {
+
+        MancalaBoard mancalaBoard = initialMancalaBoard();
 
         BoardRepo boardRepo = mock(MancalaBoardRepo.class);
         PlayerRepo playerRepo = mock(PLayerBoardRepo.class);
-
-
         GameService gameService = new GameServiceImpl(boardRepo, playerRepo);
 
         when((boardRepo.getMancala())).thenReturn(mancalaBoard);
