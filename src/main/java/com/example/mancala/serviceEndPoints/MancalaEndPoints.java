@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public class MancalaEndPoints {
     public ResponseEntity<String> starterPlayer(@PathVariable Integer playerNumber) {
         gameService.checkGameValidation();
         gameService.checkStarterPlayerValidation(playerNumber);
-        gameService.setStarterPlayer(playerNumber-1);
+        gameService.setStarterPlayer(playerNumber - 1);
         return new ResponseEntity<>("Player " + (playerNumber == 1 ? "first player" : "second player") + " must Start.", HttpStatus.OK);
     }
 
@@ -64,12 +63,13 @@ public class MancalaEndPoints {
 
     }
 
-    private List<Pit> getReversPits(PlayerBoard playerBoard){
-        List<Pit> pits = new ArrayList<>();
-        pits.addAll(playerBoard.getPits());
+    private List<Pit> getReversPits(PlayerBoard playerBoard) {
+        List<Pit> pits = new ArrayList<>(playerBoard.getPits());
         Collections.reverse(pits);
+
         return pits;
     }
+
     private ResponseMancala createNextMancalaResponse(Integer nextPlayer, List<PlayerBoard> playerBoardList) {
         ResponseMancala responseMancala = new ResponseMancala();
         PlayerBoard firstPlayer = playerBoardList.get(0);
@@ -77,11 +77,10 @@ public class MancalaEndPoints {
         responseMancala.setNextPlayer(nextPlayer == 0 ? "first player" : "second player");
 
         List<Pit> pits = getReversPits(secondPlayer);
-        String firstAmount = firstPlayer.getStoreAmount()+"";
-        String secondAmount = secondPlayer.getStoreAmount()+"";
-        responseMancala.setValuesSecondPlayer(secondAmount+"  || " + pits.toString().replace("[", "").replace("]", "") + " ||  " + firstAmount);
-        responseMancala.setValuesFirstPlayer(secondAmount.replaceAll(".", " ") + "   || " + firstPlayer.getPits().toString().replace("[", "").replace("]", "")+" ||  " +firstAmount.replaceAll(".", " "));
-
+        String firstAmount = firstPlayer.getStoreAmount() + "";
+        String secondAmount = secondPlayer.getStoreAmount() + "";
+        responseMancala.setValuesSecondPlayer(secondAmount + "  || " + pits.toString().replace("[", "").replace("]", "") + " ||  " + firstAmount);
+        responseMancala.setValuesFirstPlayer(secondAmount.replaceAll(".", " ") + "   || " + firstPlayer.getPits().toString().replace("[", "").replace("]", "") + " ||  " + firstAmount.replaceAll(".", " "));
 
 
         return responseMancala;
