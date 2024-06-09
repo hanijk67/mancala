@@ -1,5 +1,6 @@
 package com.example.mancala.service;
 
+import com.example.mancala.entity.Pit;
 import com.example.mancala.repo.PlayerRepo;
 import com.example.mancala.serviceEndPoints.eception.MancalaException;
 import com.example.mancala.entity.PlayerBoard;
@@ -13,8 +14,8 @@ import java.util.List;
 @Service
 public class GameServiceImpl implements GameService {
 
-    private BoardRepo mancalaBoardRepo;
-    private PlayerRepo playerBoardRepo;
+    private final BoardRepo mancalaBoardRepo;
+    private final PlayerRepo playerBoardRepo;
 
 
     @Autowired
@@ -24,6 +25,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
+    @RateLimiter(name = "mancala")
     public Integer getPlayerCount() {
         return mancalaBoardRepo.getPlayerCount();
     }
@@ -40,7 +42,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private Integer findNextPLayer() {
-        Integer nextPlayer = mancalaBoardRepo.getPlayerTurnIndex() + 1;
+        int nextPlayer = mancalaBoardRepo.getPlayerTurnIndex() + 1;
         if (mancalaBoardRepo.getPlayerTurnIndex() == mancalaBoardRepo.getPlayerCount() - 1) {
             nextPlayer = 0;
         }
@@ -84,10 +86,12 @@ public class GameServiceImpl implements GameService {
         } catch (Exception e) {
             if (e instanceof MancalaException.CellIsEmptyException) {
                 throw new MancalaException.CellIsEmptyException("not valid Cell, please choose another cell.");
-            }
-            if (e instanceof MancalaException.PurgeFromOppositeException) {
+            } else if (e instanceof MancalaException.PurgeFromOppositeException) {
                 purgeCell();
+            } else {
+                throw e;
             }
+
         }
         return leftOver;
     }
@@ -99,7 +103,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public Boolean gameIsOver() {
-        return mancalaBoardRepo.getMancala().getPlayers().stream().anyMatch(playerBoard -> playerBoardRepo.isNotEmpty(playerBoard));
+        return mancalaBoardRepo.getMancala().getPlayers().stream().anyMatch(playerBoardRepo::isNotEmpty);
     }
 
     @Override
@@ -136,7 +140,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public void collectFromPits() {
         mancalaBoardRepo.getMancala().getPlayers().forEach(player -> {
-            Integer sumOfPits = player.getPits().stream().mapToInt(pit -> pit.take()).sum();
+            Integer sumOfPits = player.getPits().stream().mapToInt(Pit::take).sum();
             playerBoardRepo.purgeReward(player, sumOfPits);
         });
     }
